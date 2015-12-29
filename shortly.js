@@ -24,15 +24,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 // app.use(cookieParser());
-app.use(session({secret:'headin'}));
-// app.use(session({
-//   secret:'secretToken',
-//   resave: true,  
-//   saveUninitialized: true
-// }));
+app.use(session({secret:'headin', resave: true, saveUninitialized: true}));
 
-app.get('/', 
+//app.use(util.checkUser);
+app.get('/', util.checkUser,
 function(req, res) {
+
   res.render('index');
   // console.log("username",req.session.name);
 });
@@ -111,7 +108,7 @@ app.post('/login', function (req, res) {
       
       res.redirect('/');
     }).catch(function(error){
-      res.redirect('/login');
+      // res.redirect('/login');
     });
 
 });
