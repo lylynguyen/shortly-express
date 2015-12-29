@@ -2,7 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+// var cookieParser = require('cookie-parser');
+var session = require('express-session');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -22,10 +23,18 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+// app.use(cookieParser());
+app.use(session({secret:'headin'}));
+// app.use(session({
+//   secret:'secretToken',
+//   resave: true,  
+//   saveUninitialized: true
+// }));
 
 app.get('/', 
 function(req, res) {
   res.render('index');
+  // console.log("username",req.session.name);
 });
 
 app.get('/create', 
@@ -75,6 +84,38 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.post('/signup', function(req, res){
+  var username = req.body.username;
+  var password = req.body.password;
+
+  new User ({username: username, password: password}).save()
+    .then(function(posted){
+      res.redirect('/login');
+
+    });
+  
+});
+
+app.post('/login', function (req, res) {
+
+  var username = req.body.username;
+  var password = req.body.password;
+
+  Users
+    .query('where', 'username', '=', username)
+    .fetch()
+    .then(function(model) {
+      console.log('here');
+      req.session.name = username;
+      // console.log("hi", req.session.name);
+      
+      res.redirect('/');
+    }).catch(function(error){
+      res.redirect('/login');
+    });
+
+});
+
 
 
 
