@@ -27,7 +27,7 @@ app.use(express.static(__dirname + '/public'));
 app.use(session({secret:'headin', resave: true, saveUninitialized: true}));
 
 //app.use(util.checkUser);
-app.get('/', util.checkUser,
+app.get('/', //util.checkUser,
 function(req, res) {
 
   res.render('index');
@@ -104,7 +104,7 @@ app.post('/login', function (req, res) {
     .then(function(model) {
       console.log('here');
       req.session.name = username;
-      // console.log("hi", req.session.name);
+      console.log("red.session.name: ", req.session.name);
       
       res.redirect('/');
     }).catch(function(error){
