@@ -84,15 +84,31 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.get('/signup', function(req, res) {
+  res.render('signup');
+});
+
 app.post('/signup', function(req, res){
   var username = req.body.username;
   var password = req.body.password;
 
-  new User ({username: username, password: password}).save()
-    .then(function(posted){
-      res.redirect('/login');
-
+  new User({ username: username})
+    .fetch()
+    .then(function(user){
+      if(user){
+        res.redirect('/signup');
+      } else {
+        new User ({username: username, password: password}).save()
+        .then(function(posted){
+          res.redirect('/login');
+        });
+      }
     });
+
+//   new User ({username: username, password: password}).save()
+//     .then(function(posted){
+//       res.redirect('/login');
+//     });
 });
 
 app.post('/login', function (req, res) {
@@ -103,6 +119,9 @@ app.post('/login', function (req, res) {
   new User({ username: username})
     .fetch()
     .then(function(user){
+      if (!user){
+        res.redirect('/login');
+      }
 
       user.comparePassword(password,function(result){
         if(result){
