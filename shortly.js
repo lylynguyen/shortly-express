@@ -24,29 +24,32 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 // app.use(cookieParser());
-app.use(session({secret:'headin', resave: true, saveUninitialized: true}));
+app.use(session({
+  secret:'headin', resave: true, saveUninitialized: true
+})
+);
 
 //app.use(util.checkUser);
-app.get('/', //util.checkUser,
+app.get('/', util.checkUser,
 function(req, res) {
 
   res.render('index');
   // console.log("username",req.session.name);
 });
 
-app.get('/create', 
+app.get('/create', util.checkUser, 
 function(req, res) {
   res.render('index');
 });
 
-app.get('/links', 
+app.get('/links', util.checkUser, 
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
 });
 
-app.post('/links', 
+app.post('/links', util.checkUser,
 function(req, res) {
   var uri = req.body.url;
 
@@ -90,29 +93,33 @@ app.post('/signup', function(req, res){
       res.redirect('/login');
 
     });
-  
 });
 
 app.post('/login', function (req, res) {
 
   var username = req.body.username;
   var password = req.body.password;
-
-  Users
-    .query('where', 'username', '=', username)
+  
+  new User({ username: username})
     .fetch()
-    .then(function(model) {
-      console.log('here');
-      req.session.name = username;
-      console.log("red.session.name: ", req.session.name);
-      
-      res.redirect('/');
-    }).catch(function(error){
-      // res.redirect('/login');
-    });
+    .then(function(user){
 
+      user.comparePassword(password,function(result){
+        if(result){
+          util.makeSession(req, res, username);
+        } else {
+          res.redirect('/login');
+        }
+      });
+      
+    });
 });
 
+app.get('/logout', function(req, res){
+  req.session.destroy(function(){
+    res.redirect('/login');
+  });
+});
 
 
 
